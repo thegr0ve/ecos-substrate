@@ -1,7 +1,3 @@
-# .github/labels.yml
-# Canonical label set for ecos-substrate. Apply via a labels-sync action
-# (e.g. actions/labeler or EndBug/label-sync) pointed at this file.
-
 - name: "area:schema"
   color: "5319e7"
   description: "SCHEMA_SPEC.md, schema/schema.yaml, entity/relation types"
@@ -45,6 +41,10 @@
 - name: "agent-authored"
   color: "bfdadc"
   description: "Change was drafted by an AI agent, not typed by a human"
+
+- name: "copilot-reviewed"
+  color: "1f6feb"
+  description: "GitHub Copilot has completed an automated review pass on this PR"
 
 - name: "priority:high"
   color: "b60205"
