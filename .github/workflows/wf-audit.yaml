@@ -32,17 +32,23 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check every entities/<domain> directory has a _community.yaml
         run: |
+          shopt -s nullglob
           missing=0
-          for d in entities/*/; do
-            if [ ! -f "${d}_community.yaml" ]; then
-              echo "Missing _community.yaml in ${d}"
-              missing=1
+          dirs=(entities/*/)
+          if [ ${#dirs[@]} -eq 0 ]; then
+            echo "No entity domains yet — nothing to check."
+          else
+            for d in "${dirs[@]}"; do
+              if [ ! -f "${d}_community.yaml" ]; then
+                echo "Missing _community.yaml in ${d}"
+                missing=1
+              fi
+            done
+            if [ "$missing" -eq 1 ]; then
+              echo "One or more top-level entity domains is missing _community.yaml."
+              echo "See docs/GRAPH_CONVENTIONS.md and templates/_community.yaml.template."
+              exit 1
             fi
-          done
-          if [ "$missing" -eq 1 ]; then
-            echo "One or more top-level entity domains is missing _community.yaml."
-            echo "See docs/GRAPH_CONVENTIONS.md and templates/_community.yaml.template."
-            exit 1
           fi
 
   weekly-summary:
