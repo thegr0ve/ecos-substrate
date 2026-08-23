@@ -34,3 +34,4 @@ attribute_types:
   - name: "tags"
     type: "list[string]"
     description: "Free-form classification labels used for community refinement."
+# council-consult record added to PR description on 2026-08-23
