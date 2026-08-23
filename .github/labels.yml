@@ -1,0 +1,59 @@
+# .github/labels.yml
+# Canonical label set for ecos-substrate. Apply via a labels-sync action
+# (e.g. actions/labeler or EndBug/label-sync) pointed at this file.
+
+- name: "area:schema"
+  color: "5319e7"
+  description: "SCHEMA_SPEC.md, schema/schema.yaml, entity/relation types"
+
+- name: "area:entities"
+  color: "0e8a16"
+  description: "Changes under entities/"
+
+- name: "area:relationships"
+  color: "0e8a16"
+  description: "Changes under relationships/"
+
+- name: "area:conventions"
+  color: "1d76db"
+  description: "docs/GRAPH_CONVENTIONS.md and node/frontmatter conventions"
+
+- name: "area:ci"
+  color: "fbca04"
+  description: "Workflows, validate_graph.py, CI configuration"
+
+- name: "area:agents"
+  color: "c5def5"
+  description: "AGENTS.md, skills/, agents/"
+
+- name: "type:bug"
+  color: "d73a4a"
+  description: "Something is broken (validator, workflow, or content)"
+
+- name: "type:feature"
+  color: "a2eeef"
+  description: "New capability, schema type, or automation"
+
+- name: "type:proposal"
+  color: "d4c5f9"
+  description: "New entity or relationship type proposal"
+
+- name: "needs-council-review"
+  color: "e99695"
+  description: "Requires the council-consult skill before merge — see AGENTS.md"
+
+- name: "agent-authored"
+  color: "bfdadc"
+  description: "Change was drafted by an AI agent, not typed by a human"
+
+- name: "priority:high"
+  color: "b60205"
+  description: "Blocking or time-sensitive"
+
+- name: "priority:normal"
+  color: "cfd3d7"
+  description: "Default priority"
+
+- name: "status:blocked"
+  color: "000000"
+  description: "Blocked on another issue/PR or a council decision"

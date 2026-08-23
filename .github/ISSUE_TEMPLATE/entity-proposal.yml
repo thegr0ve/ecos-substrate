@@ -1,0 +1,46 @@
+name: New entity/relationship type proposal
+description: Propose a new entity_type or relation_type for schema/schema.yaml
+title: "[schema] "
+labels: ["area:schema", "type:proposal", "needs-council-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New types are schema changes, not content changes — see AGENTS.md.
+        This issue will be routed through the council-consult skill before
+        any change to schema/schema.yaml is merged.
+  - type: input
+    id: type-name
+    attributes:
+      label: Proposed type name
+      placeholder: e.g. Species, Habitat, DependsOnClimate
+    validations:
+      required: true
+  - type: dropdown
+    id: type-kind
+    attributes:
+      label: Kind
+      options:
+        - entity_type
+        - relation_type
+        - attribute_type
+    validations:
+      required: true
+  - type: textarea
+    id: definition
+    attributes:
+      label: Proposed definition
+      description: What does this type mean? Cite or draft the SCHEMA_SPEC.md section.
+    validations:
+      required: true
+  - type: textarea
+    id: why-not-existing
+    attributes:
+      label: Why doesn't an existing type cover this?
+    validations:
+      required: true
+  - type: textarea
+    id: blast-radius
+    attributes:
+      label: Expected usage / blast radius
+      description: Which entities/relationships would use this type once added?
