@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Graph Substrate Conventions
+    url: https://github.com/thegr0ve/ecos-substrate/blob/main/docs/GRAPH_CONVENTIONS.md
+    about: Read this before proposing a new entity/relation type.
