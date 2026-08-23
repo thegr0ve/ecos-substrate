@@ -9,6 +9,7 @@ on:
       - "docs/GRAPH_CONVENTIONS.md"
       - "entities/**"
       - "relationships/**"
+      - ".github/workflows/**"
 
 jobs:
   flag-schema-changes:
@@ -69,8 +70,32 @@ jobs:
               );
             }
 
+  request-copilot-review:
+    if: github.event.action == 'opened' || github.event.action == 'reopened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request GitHub Copilot code review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                reviewers: ["copilot-pull-request-reviewer[bot]"],
+              });
+              core.notice("Requested a GitHub Copilot code review on this pull request.");
+            } catch (err) {
+              core.warning(
+                "Could not auto-request Copilot review (" + err.message + "). " +
+                "Request it manually from the Reviewers panel, or via the " +
+                "request_copilot_review tool if using an agent."
+              );
+            }
+
   post-briefing:
-    needs: flag-schema-changes
+    needs: [flag-schema-changes, request-copilot-review]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +108,9 @@ jobs:
             // Replace this step with a call to the briefing agent runtime
             // once one is wired up; until then this documents the contract
             // and expected output template defined in
-            // agents/briefing.agent.md.
+            // agents/briefing.agent.md. A future revision of that template
+            // should also report the outcome of the request-copilot-review
+            // job above (pass/flagged/pending).
             core.notice(
               "Briefing agent hook: see agents/briefing.agent.md for the " +
               "expected output template this step should post as a PR comment."
