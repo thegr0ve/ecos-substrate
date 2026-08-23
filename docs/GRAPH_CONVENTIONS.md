@@ -20,7 +20,7 @@ timestamp: "YYYY-MM-DDTHH:MM:SSZ"
 
 - `type` MUST match a value declared in `schema/schema.yaml`.
 - `depends_on` MUST use relative paths to other files in this repository.
-  These become graph edges and are validated by CI (see `.github/workflows/validate-graph.yml`).
+  These become graph edges and are validated by CI (see `.github/workflows/wf-audit.yaml`).
 - `tags` seed the attribute layer used for community refinement once the
   repository graduates to automated clustering.
 
