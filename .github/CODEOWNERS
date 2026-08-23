@@ -1,0 +1,19 @@
+# See docs/GRAPH_CONVENTIONS.md for what counts as a "schema change".
+# Schema-level changes always require a human owner's approval — see AGENTS.md.
+
+# Default owner for anything not matched below
+*                                   @thegr0ve
+
+# Schema is the highest-stakes surface — always human-reviewed
+/SCHEMA_SPEC.md                     @thegr0ve
+/schema/                            @thegr0ve
+/docs/GRAPH_CONVENTIONS.md          @thegr0ve
+
+# Agent framework and CI scaffolding
+/AGENTS.md                          @thegr0ve
+/skills/                            @thegr0ve
+/agents/                            @thegr0ve
+/.github/                           @thegr0ve
+
+# Validation tooling
+/scripts/validate_graph.py          @thegr0ve

@@ -1,0 +1,26 @@
+name: Bug report
+description: Something in the graph, validator, or workflow is broken
+title: "[bug] "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: File(s) or workflow run affected
+  - type: textarea
+    id: validator-output
+    attributes:
+      label: scripts/validate_graph.py output (if relevant)
+      render: shell

@@ -1,0 +1,63 @@
+name: Graph Substrate Audit
+
+on:
+  pull_request:
+    paths:
+      - "entities/**"
+      - "relationships/**"
+      - "schema/**"
+      - "scripts/validate_graph.py"
+  schedule:
+    - cron: "0 6 * * 1"   # weekly, Monday 06:00 UTC — full-repo audit
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install pyyaml
+      - name: Validate frontmatter, types, and links
+        run: python scripts/validate_graph.py
+
+  audit-community-hygiene:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check every entities/<domain> directory has a _community.yaml
+        run: |
+          shopt -s nullglob
+          missing=0
+          dirs=(entities/*/)
+          if [ ${#dirs[@]} -eq 0 ]; then
+            echo "No entity domains yet — nothing to check."
+          else
+            for d in "${dirs[@]}"; do
+              if [ ! -f "${d}_community.yaml" ]; then
+                echo "Missing _community.yaml in ${d}"
+                missing=1
+              fi
+            done
+            if [ "$missing" -eq 1 ]; then
+              echo "One or more top-level entity domains is missing _community.yaml."
+              echo "See docs/GRAPH_CONVENTIONS.md and templates/_community.yaml.template."
+              exit 1
+            fi
+          fi
+
+  weekly-summary:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    needs: [validate, audit-community-hygiene]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node/type/edge counts
+        run: |
+          echo "Entity files: $(find entities -name '*.md' ! -name 'README.md' | wc -l)"
+          echo "Relationship files: $(find relationships -name '*.md' ! -name 'README.md' | wc -l)"
+          echo "Declared entity_types: $(grep -c 'name:' schema/schema.yaml || true)"
