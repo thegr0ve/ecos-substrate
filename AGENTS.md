@@ -66,8 +66,8 @@ draft and propose, but may not self-merge schema changes.
 
 ## Failure modes to avoid
 
-- Do not bypass `validate-graph.yml` / `wf-audit.yaml` by editing the
-  validator instead of the content.
+- Do not bypass `wf-audit.yaml` by editing the validator instead of the
+  content.
 - Do not silently widen an existing `entity_type`'s meaning to avoid
   creating a new one — flag it for council consult instead.
 - Do not delete `_community.yaml` files to "simplify" — community structure
