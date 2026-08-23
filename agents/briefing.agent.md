@@ -5,7 +5,7 @@ description: >
   pull request — new/changed entities, relationships, and schema types —
   and posts it as a PR comment. Triggered by wf-council.yaml on PRs that
   touch entities/, relationships/, or schema/.
-version: "0.1.0"
+version: "0.2.0"
 ---
 
 # Agent: Briefing Agent
@@ -27,6 +27,10 @@ reports.
 - The output of `scripts/validate_graph.py`, if it has already run in CI.
 - Any Council Consult record attached to the PR or issue (see
   `skills/council-consult.skill.md`), if present.
+- Whether a GitHub Copilot review has been requested on the PR (via the
+  `request-copilot-review` job in `wf-council.yaml` or a manual request),
+  and its outcome (pending, completed with N comments, or not requested),
+  if available from the PR's requested reviewers / review list.
 
 ## Procedure
 
@@ -66,6 +70,8 @@ reports.
 **Council Consult:** <synthesis line, or "not required for this change">
 
 **Validator:** <pass/fail from scripts/validate_graph.py, or "not yet run">
+
+**Copilot review:** <pending | completed — no comments | completed — N comment(s) | not requested>
 ```
 
 ## Boundaries
@@ -73,6 +79,8 @@ reports.
 - Never edits repository content — read-only over the diff and repo state.
 - Never overrides `scripts/validate_graph.py` or CI status; it reports what
   they found, it does not re-judge it.
+- Never overrides or re-judges a Copilot review's findings; it reports
+  whether one occurred and its comment count, not its content or verdict.
 - If frontmatter is missing or malformed on a file the briefing needs to
   summarize, it reports that file as unparseable rather than guessing its
   intent.
