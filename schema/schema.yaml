@@ -18,6 +18,9 @@ entity_types:
   - name: "relationship"
     description: "Placeholder entity type for cross-domain relationship node files declared under relationships/ (see relationships/README.md). Refine into concrete relation node types alongside the other entity_types."
     required_frontmatter: ["type", "title", "description", "tags"]
+  - name: "Idea"
+    description: "A proposed system, architecture, or strategic concept under active exploration; not yet an empirical finding or committed design."
+    required_frontmatter: ["type", "title", "description", "tags"]
 
 relation_types:
   - name: "depends_on"
@@ -31,3 +34,4 @@ attribute_types:
   - name: "tags"
     type: "list[string]"
     description: "Free-form classification labels used for community refinement."
+# council-consult record added to PR description on 2026-08-23

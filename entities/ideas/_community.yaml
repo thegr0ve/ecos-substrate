@@ -1,0 +1,6 @@
+community_id: "ideas"
+title: "Ideas"
+summary: "Exploratory concepts, proposals, and strategic architectures under active reasoning. Entries here are not yet empirical findings or committed designs — they graduate to other domains once validated."
+parent_community: null
+member_types: ["Idea"]
+tags: ["ideas", "exploration"]

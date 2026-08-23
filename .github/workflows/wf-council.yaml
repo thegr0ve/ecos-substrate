@@ -37,12 +37,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: ["needs-council-review"],
-            });
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ["needs-council-review"],
+              });
+            } catch (err) {
+              core.warning(
+                `Could not apply 'needs-council-review' label (it may not exist in the repo yet — see .github/labels.yml for the canonical label set and set up a labels-sync action): ${err.message}`
+              );
+            }
 
       - name: Check for Council Consult record
         if: steps.detect.outputs.schema_change == 'true'
