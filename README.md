@@ -17,7 +17,7 @@ indexing over a hierarchical community graph).
 | Machine-readable schema seed | Scaffolded | `schema/schema.yaml` |
 | Node/frontmatter convention | Defined | `docs/GRAPH_CONVENTIONS.md` |
 | Directory-as-community structure | Scaffolded | `entities/`, `relationships/` |
-| Graph validation (CI) | Scaffolded | `.github/workflows/validate-graph.yml`, `scripts/validate_graph.py` |
+| Graph validation (CI) | Scaffolded | `.github/workflows/wf-audit.yaml`, `scripts/validate_graph.py` |
 | Embedding + Voronoi/HNSW index | Not started | future: per-directory index over `entities/` |
 | Fused GraphRAG runtime | Not started | future: `config/graphrag.settings.template.yaml` → active config |
 
@@ -27,7 +27,7 @@ indexing over a hierarchical community graph).
    `schema/schema.yaml`.
 2. Decompose `SCHEMA_SPEC.md` into individual node files under `entities/`,
    following `docs/GRAPH_CONVENTIONS.md` (YAML frontmatter + `depends_on` links).
-3. Let CI (`validate-graph.yml`) enforce frontmatter and link integrity as
+3. Let CI (`wf-audit.yaml`) enforce frontmatter and link integrity as
    the node count grows.
 4. Once retrieval needs exceed link-traversal (paraphrase, cross-domain
    similarity), add embeddings and a Voronoi/IVF or HNSW index scoped per
