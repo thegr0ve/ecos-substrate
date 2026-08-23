@@ -39,3 +39,10 @@ indexing over a hierarchical community graph).
 ## Contributing
 
 See `docs/GRAPH_CONVENTIONS.md` before adding new entity or relationship files.
+
+## Licensing
+
+- **Code & schema** (scripts, workflows, `schema/schema.yaml`): MIT License — see [LICENSE](LICENSE).
+- **Metadata & graph weights**: CC0 1.0 Universal (Public Domain Dedication).
+- **Synthetic paraphrased assertions** (editorial commentary in entity nodes): CC-BY 4.0.
+- **Third-party sources**: Referenced via DOI/URL pointers only; original copyright retained by respective holders.
