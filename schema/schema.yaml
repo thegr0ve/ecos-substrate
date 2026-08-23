@@ -1,0 +1,33 @@
+# schema/schema.yaml
+# Machine-readable seed schema for the ECOS graph substrate.
+# This is the structured counterpart to SCHEMA_SPEC.md — the human-authored
+# prose spec remains the source of truth for definitions; this file is the
+# consumable artifact that downstream tooling (validators, GraphRAG config,
+# embedding indexers) reads directly instead of re-parsing Markdown.
+#
+# TODO(maintainer): populate entity_types / relation_types below by
+# extracting the concrete types already defined in SCHEMA_SPEC.md.
+
+version: "0.1.0"
+source_spec: "SCHEMA_SPEC.md"
+
+entity_types:
+  - name: "Entity"
+    description: "Placeholder root entity type — replace with concrete ecological entity types from SCHEMA_SPEC.md (e.g. Species, Habitat, Process)."
+    required_frontmatter: ["type", "title", "description", "tags"]
+  - name: "relationship"
+    description: "Placeholder entity type for cross-domain relationship node files declared under relationships/ (see relationships/README.md). Refine into concrete relation node types alongside the other entity_types."
+    required_frontmatter: ["type", "title", "description", "tags"]
+
+relation_types:
+  - name: "depends_on"
+    description: "Generic dependency/reference edge between two nodes."
+    directional: true
+  - name: "related_to"
+    description: "Placeholder symmetric relation — refine per domain semantics defined in SCHEMA_SPEC.md."
+    directional: false
+
+attribute_types:
+  - name: "tags"
+    type: "list[string]"
+    description: "Free-form classification labels used for community refinement."

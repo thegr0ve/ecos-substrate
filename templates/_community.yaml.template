@@ -1,0 +1,9 @@
+# Copy this file to `_community.yaml` inside any directory under entities/
+# to declare that directory as a formal community node in the graph.
+
+community_id: "<unique-slug>"
+title: "<Community title>"
+summary: "<LLM- or human-written summary of what this community covers>"
+parent_community: "<path/to/parent/_community.yaml or null if top-level>"
+member_types: []   # entity_types (from schema/schema.yaml) expected in this community
+tags: []
