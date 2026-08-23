@@ -15,6 +15,9 @@ entity_types:
   - name: "Entity"
     description: "Placeholder root entity type — replace with concrete ecological entity types from SCHEMA_SPEC.md (e.g. Species, Habitat, Process)."
     required_frontmatter: ["type", "title", "description", "tags"]
+  - name: "relationship"
+    description: "Placeholder entity type for cross-domain relationship node files declared under relationships/ (see relationships/README.md). Refine into concrete relation node types alongside the other entity_types."
+    required_frontmatter: ["type", "title", "description", "tags"]
 
 relation_types:
   - name: "depends_on"

@@ -44,7 +44,8 @@ graph:
 3. **Then:** Generate per-domain embeddings and a Voronoi/IVF or HNSW index
    scoped to each top-level directory.
 4. **Finally:** Fuse the embedding index with the community graph (C-HNSW /
-   GraphRAG-style hierarchical retrieval) using `config/graphrag.settings.yaml`
-   as the pipeline configuration, seeded from `schema/schema.yaml`.
+   GraphRAG-style hierarchical retrieval) by activating
+   `config/graphrag.settings.template.yaml` as the live pipeline
+   configuration, seeded from `schema/schema.yaml`.
 
 See `README.md` for the current stage.
