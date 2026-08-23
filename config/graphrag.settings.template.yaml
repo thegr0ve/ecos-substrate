@@ -1,0 +1,22 @@
+# config/graphrag.settings.template.yaml
+# Forward-looking configuration stub for the eventual GraphRAG pipeline.
+# Not active yet — this documents how schema/schema.yaml entity_types will
+# map directly into pipeline configuration once extraction begins, so the
+# transition requires no schema rewrite, only activation.
+
+# entity_types below should mirror schema/schema.yaml:entity_types[].name
+extract_graph:
+  entity_types: []   # populate from schema/schema.yaml
+  max_gleanings: 1
+
+chunking:
+  type: tokens
+  size: 1200
+  overlap: 100
+
+cluster_graph:
+  max_cluster_size: 10
+
+vector_store:
+  type: lancedb
+  db_uri: output/lancedb
