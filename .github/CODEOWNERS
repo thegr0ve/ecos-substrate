@@ -1,5 +1,13 @@
 # See docs/GRAPH_CONVENTIONS.md for what counts as a "schema change".
 # Schema-level changes always require a human owner's approval — see AGENTS.md.
+#
+# Known risk: every path below routes to a single owner (@thegr0ve). This is
+# an accepted single point of failure at this repo's current stage (one
+# active maintainer, no external contributors yet), not an oversight.
+# Revisit trigger: the first external contributor onboarded, or the first
+# time @thegr0ve is unavailable to review for more than one week — at either
+# point, add at least one additional owner/team below before merging further
+# schema- or governance-surface changes.
 
 # Default owner for anything not matched below
 *                                   @thegr0ve
@@ -17,3 +25,4 @@
 
 # Validation tooling
 /scripts/validate_graph.py          @thegr0ve
+/tests/                             @thegr0ve

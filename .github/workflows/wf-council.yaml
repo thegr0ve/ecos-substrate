@@ -2,7 +2,7 @@ name: Council Consult Gate
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened, edited, labeled]
     paths:
       - "schema/**"
       - "SCHEMA_SPEC.md"
@@ -11,9 +11,17 @@ on:
       - "relationships/**"
       - ".github/workflows/**"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   flag-schema-changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     outputs:
       schema_change: ${{ steps.detect.outputs.schema_change }}
     steps:
@@ -21,7 +29,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect schema-level changes
+      - name: Detect schema-level and meta (workflow) changes
         id: detect
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
@@ -32,9 +40,16 @@ jobs:
           else
             echo "schema_change=false" >> "$GITHUB_OUTPUT"
           fi
+          # Meta-protection: changes to the governance workflows themselves
+          # also require a Council Consult record — see AGENTS.md.
+          if echo "$CHANGED" | grep -qE '^\.github/workflows/(wf-council|wf-audit)\.yaml$'; then
+            echo "meta_change=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "meta_change=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Label PR as needing council review
-        if: steps.detect.outputs.schema_change == 'true'
+        if: steps.detect.outputs.schema_change == 'true' || steps.detect.outputs.meta_change == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -52,7 +67,7 @@ jobs:
             }
 
       - name: Check for Council Consult record
-        if: steps.detect.outputs.schema_change == 'true'
+        if: steps.detect.outputs.schema_change == 'true' || steps.detect.outputs.meta_change == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -61,18 +76,44 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
-            const body = pr.body || "";
-            if (!body.includes("### Council Consult:")) {
+
+            const hasRecord = (text) =>
+              !!text &&
+              text.includes("### Council Consult:") &&
+              /\*\*Synthesis:\*\*/.test(text);
+
+            let found = hasRecord(pr.body || "");
+
+            if (!found) {
+              // Accept the record from PR comments too, not body-only.
+              const comments = await github.paginate(
+                github.rest.issues.listComments,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                }
+              );
+              found = comments.some((c) => hasRecord(c.body || ""));
+            }
+
+            if (!found) {
               core.setFailed(
-                "This PR touches schema/conventions but has no Council Consult " +
-                "record. Run the council-consult skill (skills/council-consult.skill.md) " +
-                "and paste its output into the PR description before merging."
+                "This PR touches schema/conventions and/or the governance " +
+                "workflow files themselves (wf-council.yaml / wf-audit.yaml) " +
+                "but has no complete Council Consult record. Run the " +
+                "council-consult skill (skills/council-consult.skill.md) and " +
+                "paste its output — including a '**Synthesis:**' line — into " +
+                "the PR description or as a PR comment before merging."
               );
             }
 
   request-copilot-review:
-    if: github.event.action == 'opened' || github.event.action == 'reopened'
+    if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Request GitHub Copilot code review
         uses: actions/github-script@v7
@@ -98,6 +139,9 @@ jobs:
     needs: [flag-schema-changes, request-copilot-review]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - name: Post Graph Substrate Briefing

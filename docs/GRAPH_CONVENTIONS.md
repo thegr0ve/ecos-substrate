@@ -49,3 +49,17 @@ graph:
    configuration, seeded from `schema/schema.yaml`.
 
 See `README.md` for the current stage.
+
+## Type-Casing Convention
+
+`entity_types` and `relation_types` in `schema/schema.yaml` MUST use
+**PascalCase** names (e.g. `Entity`, `Idea`, `Relationship`) — matching the
+convention already established by the `Entity` and `Idea` types seeded in
+this repository. Lowercase or `snake_case` type names (e.g. the historical
+`relationship` entity type) are a documentation gap, not an alternative
+convention, and MUST be corrected to PascalCase when touched.
+
+This applies to `entity_types[].name` and `relation_types[].name` values in
+`schema/schema.yaml`; it does not apply to frontmatter *field* names
+(`type`, `title`, `depends_on`, etc.), which remain lowercase `snake_case`
+per the frontmatter block above.
