@@ -37,6 +37,8 @@ FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 # Strict ISO-8601 UTC timestamp, matching the convention documented in
 # docs/GRAPH_CONVENTIONS.md: YYYY-MM-DDTHH:MM:SSZ
 TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+PASCAL_CASE_RE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
+SNAKE_CASE_RE = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 
 
 class SchemaConfigError(Exception):
@@ -69,9 +71,36 @@ def load_schema():
     return data
 
 
-def load_schema_entity_type_names(schema_data):
-    entity_types = schema_data.get("entity_types") or []
-    return {e["name"] for e in entity_types if isinstance(e, dict) and "name" in e}
+def load_schema_type_names(schema_data):
+    """Return declared entity names after validating both type vocabularies."""
+    vocabularies = (
+        ("entity_types", PASCAL_CASE_RE, "PascalCase"),
+        ("relation_types", SNAKE_CASE_RE, "snake_case"),
+    )
+    resolved = {}
+    for key, naming_pattern, naming_label in vocabularies:
+        entries = schema_data.get(key)
+        if not isinstance(entries, list):
+            raise SchemaConfigError(f"{SCHEMA_PATH}: {key} must be a list")
+
+        names = []
+        for index, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                raise SchemaConfigError(
+                    f"{SCHEMA_PATH}: {key}[{index}] must be a mapping"
+                )
+            name = entry.get("name")
+            if not isinstance(name, str) or not naming_pattern.fullmatch(name):
+                raise SchemaConfigError(
+                    f"{SCHEMA_PATH}: {key}[{index}].name must use {naming_label}"
+                )
+            names.append(name)
+
+        if len(names) != len(set(names)):
+            raise SchemaConfigError(f"{SCHEMA_PATH}: {key} contains duplicate names")
+        resolved[key] = set(names)
+
+    return resolved["entity_types"], resolved["relation_types"]
 
 
 def find_markdown_files():
@@ -129,9 +158,26 @@ def validate_file(path, valid_types, errors):
             "timestamp (expected YYYY-MM-DDTHH:MM:SSZ)"
         )
 
-    for dep in meta.get("depends_on", []) or []:
-        dep_path = (path.parent / dep).resolve()
-        if not dep_path.exists():
+    dependencies = meta.get("depends_on")
+    if dependencies is not None and not isinstance(dependencies, list):
+        errors.append(f"{path}: depends_on must be a list of relative paths")
+        return
+
+    for dep in dependencies or []:
+        if not isinstance(dep, str) or not dep.strip():
+            errors.append(f"{path}: depends_on entries must be non-empty strings")
+            continue
+        dep_value = Path(dep)
+        if dep_value.is_absolute():
+            errors.append(f"{path}: depends_on target must be relative: {dep}")
+            continue
+        dep_path = (path.parent / dep_value).resolve()
+        try:
+            dep_path.relative_to(ROOT.resolve())
+        except ValueError:
+            errors.append(f"{path}: depends_on target escapes repository: {dep}")
+            continue
+        if not dep_path.is_file():
             errors.append(f"{path}: depends_on target does not exist: {dep}")
 
 
@@ -175,12 +221,11 @@ def check_graphrag_drift(schema_entity_type_names, errors):
 def main():
     try:
         schema_data = load_schema()
+        valid_types, _relation_types = load_schema_type_names(schema_data)
     except SchemaConfigError as e:
         print(f"Graph validation failed: {e}")
         print("schema/schema.yaml must exist and parse cleanly (fail-closed).")
         sys.exit(2)
-
-    valid_types = load_schema_entity_type_names(schema_data)
 
     errors = []
     files = find_markdown_files()

@@ -27,6 +27,7 @@ entity_types:
   - name: "Entity"
     description: "Root entity type."
     required_frontmatter: ["type", "title", "description", "tags"]
+relation_types: []
 """
 
 VALID_FRONTMATTER = """\
@@ -71,7 +72,7 @@ def write_node(repo, name, content, newline=None):
 def test_valid_node_passes(repo):
     write_node(repo, "valid.md", VALID_FRONTMATTER)
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(repo / "entities" / "valid.md", valid_types, errors)
     assert errors == []
@@ -81,7 +82,7 @@ def test_missing_required_field(repo):
     bad = VALID_FRONTMATTER.replace('tags: ["test"]\n', "")
     write_node(repo, "missing_field.md", bad)
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(repo / "entities" / "missing_field.md", valid_types, errors)
     assert any("missing required field 'tags'" in e for e in errors)
@@ -91,7 +92,7 @@ def test_invalid_type(repo):
     bad = VALID_FRONTMATTER.replace('type: "Entity"', 'type: "NotDeclared"')
     write_node(repo, "invalid_type.md", bad)
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(repo / "entities" / "invalid_type.md", valid_types, errors)
     assert any("not declared in schema/schema.yaml" in e for e in errors)
@@ -101,7 +102,7 @@ def test_dangling_depends_on(repo):
     bad = VALID_FRONTMATTER.replace("depends_on: []", 'depends_on: ["./does-not-exist.md"]')
     write_node(repo, "dangling.md", bad)
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(repo / "entities" / "dangling.md", valid_types, errors)
     assert any("depends_on target does not exist" in e for e in errors)
@@ -113,7 +114,7 @@ def test_malformed_timestamp(repo):
     )
     write_node(repo, "bad_timestamp.md", bad)
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(repo / "entities" / "bad_timestamp.md", valid_types, errors)
     assert any("not a valid ISO-8601" in e for e in errors)
@@ -122,7 +123,7 @@ def test_malformed_timestamp(repo):
 def test_crlf_file_is_tolerated(repo):
     path = write_node(repo, "crlf.md", VALID_FRONTMATTER, newline="crlf")
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(path, valid_types, errors)
     assert errors == []
@@ -132,7 +133,7 @@ def test_bom_file_is_tolerated(repo):
     path = repo / "entities" / "bom.md"
     path.write_bytes(b"\xef\xbb\xbf" + VALID_FRONTMATTER.encode("utf-8"))
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.validate_file(path, valid_types, errors)
     assert errors == []
@@ -150,12 +151,60 @@ def test_unparsable_schema_fails_closed(repo):
         validate_graph.load_schema()
 
 
+def test_schema_entity_type_casing_fails_closed(repo):
+    (repo / "schema" / "schema.yaml").write_text(
+        'entity_types:\n  - name: "entity"\nrelation_types: []\n', encoding="utf-8"
+    )
+    with pytest.raises(validate_graph.SchemaConfigError, match="PascalCase"):
+        validate_graph.load_schema_type_names(validate_graph.load_schema())
+
+
+def test_schema_relation_type_casing_fails_closed(repo):
+    (repo / "schema" / "schema.yaml").write_text(
+        'entity_types:\n  - name: "Entity"\nrelation_types:\n  - name: "DependsOn"\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(validate_graph.SchemaConfigError, match="snake_case"):
+        validate_graph.load_schema_type_names(validate_graph.load_schema())
+
+
+def test_depends_on_must_be_a_list(repo):
+    path = write_node(
+        repo,
+        "scalar-dependency.md",
+        VALID_FRONTMATTER.replace("depends_on: []", 'depends_on: "./other.md"'),
+    )
+    schema_data = validate_graph.load_schema()
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
+    errors = []
+    validate_graph.validate_file(path, valid_types, errors)
+    assert any("depends_on must be a list" in error for error in errors)
+
+
+def test_depends_on_cannot_escape_repository(repo, tmp_path):
+    outside = tmp_path.parent / "outside.md"
+    outside.write_text("outside", encoding="utf-8")
+    relative_escape = Path("..") / ".." / outside.name
+    path = write_node(
+        repo,
+        "escape.md",
+        VALID_FRONTMATTER.replace(
+            "depends_on: []", f'depends_on: ["{relative_escape.as_posix()}"]'
+        ),
+    )
+    schema_data = validate_graph.load_schema()
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
+    errors = []
+    validate_graph.validate_file(path, valid_types, errors)
+    assert any("escapes repository" in error for error in errors)
+
+
 def test_graphrag_drift_detected(repo):
     (repo / "config" / "graphrag.settings.template.yaml").write_text(
         'extract_graph:\n  entity_types: ["SomethingElse"]\n', encoding="utf-8"
     )
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.check_graphrag_drift(valid_types, errors)
     assert any("has drifted" in e for e in errors)
@@ -166,7 +215,7 @@ def test_graphrag_empty_entity_types_is_not_drift(repo):
         "extract_graph:\n  entity_types: []\n", encoding="utf-8"
     )
     schema_data = validate_graph.load_schema()
-    valid_types = validate_graph.load_schema_entity_type_names(schema_data)
+    valid_types, _ = validate_graph.load_schema_type_names(schema_data)
     errors = []
     validate_graph.check_graphrag_drift(valid_types, errors)
     assert errors == []
