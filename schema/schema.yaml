@@ -15,7 +15,7 @@ entity_types:
   - name: "Entity"
     description: "Placeholder root entity type — replace with concrete ecological entity types from SCHEMA_SPEC.md (e.g. Species, Habitat, Process)."
     required_frontmatter: ["type", "title", "description", "tags"]
-  - name: "relationship"
+  - name: "Relationship"
     description: "Placeholder entity type for cross-domain relationship node files declared under relationships/ (see relationships/README.md). Refine into concrete relation node types alongside the other entity_types."
     required_frontmatter: ["type", "title", "description", "tags"]
   - name: "Idea"
@@ -35,3 +35,5 @@ attribute_types:
     type: "list[string]"
     description: "Free-form classification labels used for community refinement."
 # council-consult record added to PR description on 2026-08-23
+# type-casing convention: PascalCase entity types and snake_case relation
+# predicates — see docs/GRAPH_CONVENTIONS.md#type-casing-convention
